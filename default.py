@@ -138,6 +138,18 @@ class XBMCUloztoContentProvider(xbmcprovider.XBMCLoginOptionalContentProvider):
         except ResolveException, e:
             self._handle_exc(e)
 
+class XBMCWebshareContentProvider(xbmcprovider.XBMCLoginOptionalContentProvider):
+
+    def resolve(self,url):
+        item = self.provider.video_item(url=url)
+        if not self.provider.login():
+            xbmcgui.Dialog().ok(self.provider.name,xbmcutil.__lang__(30011))
+            return
+        try:
+            return self.provider.resolve(item)
+        except ResolveException, e:
+            self._handle_exc(e)
+
 
 settings = {
 	'downloads':__settings__('downloads'),
@@ -188,7 +200,7 @@ if __settings__('webshare_enabled') == 'true':
 			'keep-searches':__settings__('webshare_keep-searches')
 	}
 	extra.update(settings)
-	providers[p.name] = xbmcprovider.XBMCLoginOptionalContentProvider(p,extra,__addon__)
+	providers[p.name] = XBMCWebshareContentProvider(p,extra,__addon__)
 
 
 def icon(provider):
