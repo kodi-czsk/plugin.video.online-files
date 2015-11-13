@@ -238,6 +238,8 @@ class UloztoContentProvider(ContentProvider):
 
         capdata = json.loads(util.request(self._url('reloadXapca.php')))
         captcha = capdata['image']
+        if not captcha.startswith('http'):
+            captcha = 'http:' + captcha
         # ask callback to provide captcha code
         self.info('Asking for captcha img %s' % captcha)
         code = captcha_cb({'id':captcha,'img': captcha})
