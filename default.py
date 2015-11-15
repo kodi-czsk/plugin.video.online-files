@@ -134,9 +134,27 @@ class XBMCUloztoContentProvider(xbmcprovider.XBMCLoginOptionalContentProvider):
                 xbmcgui.Dialog().ok(self.provider.name,xbmcutil.__lang__(30011))
                 return
         try:
-            return self.provider.resolve(item,captcha_cb=self.ask_for_captcha)
+            return self.provider.resolve(item,captcha_cb=self.solve_captcha)
         except ResolveException, e:
             self._handle_exc(e)
+
+    def solve_captcha(self,params):
+        snd = os.path.join(unicode(xbmc.translatePath(self.addon.getAddonInfo('profile'))),'sound.wav')
+        util.save_to_file(params['snd'], snd)
+        try:
+            sndfile = open(snd, 'rb').read()
+            url = 'http://m217-io.appspot.com/ulozto'
+            headers = {'Content-Type': 'audio/wav'}
+            req = urllib2.Request(url, sndfile, headers)
+            response = urllib2.urlopen(req)
+            data = response.read()
+            response.close()
+        except urllib2.HTTPError:
+            traceback.print_exc()
+            data = ''
+        if not data:
+            return self.ask_for_captcha(params)
+        return data
 
 class XBMCWebshareContentProvider(xbmcprovider.XBMCLoginOptionalContentProvider):
 
