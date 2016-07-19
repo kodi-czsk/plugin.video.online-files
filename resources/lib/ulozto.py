@@ -204,7 +204,7 @@ class UloztoContentProvider(ContentProvider):
 
         if vip:
             data = util.substr(page,'<h3>Neomezené stahování</h3>','</div')
-            m = re.search('<a(.+?)href=\"(?P<url>[^\"]+)\"',data,re.IGNORECASE | re.DOTALL)
+            m = re.search('<a(.+?)href=\"(?P<url>[^\"#]+)\"',data,re.IGNORECASE | re.DOTALL)
             if m:
                 try:
                     self.rh.throw = True
