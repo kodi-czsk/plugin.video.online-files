@@ -20,7 +20,7 @@
 # *
 # */
 
-import re,os,urllib,urllib2,traceback
+import re,os,urllib,urllib2,traceback,socket
 sys.path.append( os.path.join ( os.path.dirname(__file__),'resources','lib') )
 import xbmcaddon,xbmc,xbmcgui,xbmcplugin
 
@@ -134,24 +134,29 @@ class XBMCUloztoContentProvider(xbmcprovider.XBMCLoginOptionalContentProvider):
                 xbmcgui.Dialog().ok(self.provider.name,xbmcutil.__lang__(30011))
                 return
         try:
-            return self.provider.resolve(item,captcha_cb=self.solve_captcha)
+            if __settings__("ulozto_captcha_auto") == "true":
+                return self.provider.resolve(item,captcha_cb=self.solve_captcha)
+            else:
+                return self.provider.resolve(item,captcha_cb=self.ask_for_captcha)
         except ResolveException, e:
             self._handle_exc(e)
 
     def solve_captcha(self,params):
         snd = os.path.join(unicode(xbmc.translatePath(self.addon.getAddonInfo('profile'))),'sound.wav')
         util.save_to_file(params['snd'], snd)
+        sndfile = open(snd, 'rb').read()
+        url = 'http://m217-io.appspot.com/ulozto'
+        headers = {'Content-Type': 'audio/wav'}
+        req = urllib2.Request(url, sndfile, headers)
+        response = None
         try:
-            sndfile = open(snd, 'rb').read()
-            url = 'http://m217-io.appspot.com/ulozto'
-            headers = {'Content-Type': 'audio/wav'}
-            req = urllib2.Request(url, sndfile, headers)
-            response = urllib2.urlopen(req)
+            response = urllib2.urlopen(req, timeout = int(__settings__("ulozto_captcha_timeout")))
             data = response.read()
-            response.close()
-        except urllib2.HTTPError:
+        except (urllib2.HTTPError, socket.timeout):
             traceback.print_exc()
             data = ''
+        finally:
+            response and response.close()
         if not data:
             return self.ask_for_captcha(params)
         return data
