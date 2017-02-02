@@ -229,6 +229,14 @@ class UloztoContentProvider(ContentProvider):
                 stream_url = self._get_file_url_anonymous(page,self._url(m.group('action')),response.headers,captcha_cb)
                 if stream_url:
                     item['url'] = stream_url
+                    # free ulozto allows seeking but doesn't allow multiple connections.
+                    # kodi does this when seeking is possible so playback doesn't work.
+                    # To prevent from use of multiple connections we set header special for kodi 
+                    # which disables seeking -> only one connection -> playback works, though we lose
+                    # seeking possibility.
+
+                    # more info - http://forum.kodi.tv/showthread.php?tid=236411
+                    item['headers'] = {'seekable':'0'}
                     item['surl'] = url
                     return item
 
