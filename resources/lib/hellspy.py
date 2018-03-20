@@ -20,9 +20,13 @@
 # *
 # */
 import re,urllib,urllib2,cookielib,random,util,sys,os,traceback
-import json
+import json, xbmcaddon
 from base64 import b64decode
 from provider import ContentProvider
+
+__scriptid__   = 'plugin.video.online-files'
+__addon__      = xbmcaddon.Addon(id=__scriptid__)
+__settings__   = __addon__.getSetting
 
 class HellspyContentProvider(ContentProvider):
 
@@ -81,24 +85,35 @@ class HellspyContentProvider(ContentProvider):
         url = self._url(url)
         util.init_urllib()
         page = util.request(url)
+
+        adult = '0'
+        if __settings__('hellspy_adult') == 'true':
+            adult = '1'
+
+        if page.find('adultWarn-') > 0:
+            page = util.request(url + '&adultControl-state=' + adult + '&do=adultControl-confirmed')
+
         data = util.substr(page,'<div class=\"file-list file-list-horizontal','<div id=\"layout-push')
         result = []
         for m in re.finditer('<div class=\"file-entry.+?<div class="preview.+?<div class=\"data.+?</div>',data, re.IGNORECASE|re.DOTALL):
             entry = m.group(0)
             item = self.video_item()
             murl = re.search('<[hH]3><a href=\"(?P<url>[^\"]+)[^>]+>(?P<name>[^<]+)',entry)
-            item['url'] = murl.group('url')
-            item['title'] = murl.group('name')
-            mimg = re.search('<img src=\"(?P<img>[^\"]+)',entry)
-            if mimg:	
-                item['img'] = mimg.group('img')
-            msize = re.search('<span class=\"file-size[^>]+>(?P<size>[^<]+)',entry)
-            if msize:
-                item['size'] = msize.group('size').strip()
-            mtime = re.search('<span class=\"duration[^>]+>(?P<time>[^<]+)',entry)
-            if mtime:
-                item['length'] = mtime.group('time').strip()
-            self._filter(result,item)
+
+            if murl:
+	            item['url'] = murl.group('url')
+	            item['title'] = murl.group('name')
+	            mimg = re.search('<img src=\"(?P<img>[^\"]+)',entry)
+	            if mimg:	
+	                item['img'] = mimg.group('img')
+	            msize = re.search('<span class=\"file-size[^>]+>(?P<size>[^<]+)',entry)
+	            if msize:
+	                item['size'] = msize.group('size').strip()
+	            mtime = re.search('<span class=\"duration[^>]+>(?P<time>[^<]+)',entry)
+	            if mtime:
+	                item['length'] = mtime.group('time').strip()
+            	self._filter(result,item)
+            	
         # page navigation
         data = util.substr(page,'<div class=\"paginator','</div')
         mprev = re.search('<li class=\"prev[^<]+<a href=\"(?P<url>[^\"]+)',data)
