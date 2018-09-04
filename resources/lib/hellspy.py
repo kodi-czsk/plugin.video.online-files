@@ -68,7 +68,7 @@ class HellspyContentProvider(ContentProvider):
             item['url'] = murl.group('url')
             item['title'] = murl.group('name')
             mimg = re.search('<img src=\"(?P<img>[^\"]+)',entry)
-            if mimg:	
+            if mimg:    
                 item['img'] = mimg.group('img')
             msize = re.search('<span class=\"file-size[^>]+>(?P<size>[^<]+)',entry)
             if msize:
@@ -101,19 +101,19 @@ class HellspyContentProvider(ContentProvider):
             murl = re.search('<[hH]3><a href=\"(?P<url>[^\"]+)[^>]+>(?P<name>[^<]+)',entry)
 
             if murl:
-	            item['url'] = murl.group('url')
-	            item['title'] = murl.group('name')
-	            mimg = re.search('<img src=\"(?P<img>[^\"]+)',entry)
-	            if mimg:	
-	                item['img'] = mimg.group('img')
-	            msize = re.search('<span class=\"file-size[^>]+>(?P<size>[^<]+)',entry)
-	            if msize:
-	                item['size'] = msize.group('size').strip()
-	            mtime = re.search('<span class=\"duration[^>]+>(?P<time>[^<]+)',entry)
-	            if mtime:
-	                item['length'] = mtime.group('time').strip()
-            	self._filter(result,item)
-            	
+                item['url'] = murl.group('url')
+                item['title'] = murl.group('name')
+                mimg = re.search('<img src=\"(?P<img>[^\"]+)',entry)
+                if mimg:    
+                    item['img'] = mimg.group('img')
+                msize = re.search('<span class=\"file-size[^>]+>(?P<size>[^<]+)',entry)
+                if msize:
+                    item['size'] = msize.group('size').strip()
+                mtime = re.search('<span class=\"duration[^>]+>(?P<time>[^<]+)',entry)
+                if mtime:
+                    item['length'] = mtime.group('time').strip()
+                self._filter(result,item)
+                
         # page navigation
         data = util.substr(page,'<div class=\"paginator','</div')
         mprev = re.search('<li class=\"prev[^<]+<a href=\"(?P<url>[^\"]+)',data)
@@ -158,7 +158,7 @@ class HellspyContentProvider(ContentProvider):
             util.error('[hellspy] - page with movie was not found on server')
             return
         m = re.search('launchFullDownload\(\'(?P<url>[^\']+)',data)
-        if m:	
+        if m:    
             item['url'] = m.group('url')
             item['surl'] = url
             return item
